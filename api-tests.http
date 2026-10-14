@@ -1,0 +1,36 @@
+### LeadBook CRM API tests
+### Open this file in VS Code with the "REST Client" extension and click "Send Request" above each block.
+
+@api = http://localhost:5000/api
+
+### 1. Health check
+GET {{api}}/health
+
+### 2. Log in with the demo account (run "npm run seed" first)
+# @name login
+POST {{api}}/auth/login
+Content-Type: application/json
+
+{ "email": "demo@leadbook.test", "password": "demo1234" }
+
+###
+@token = {{login.response.body.token}}
+
+### 3. List contacts
+GET {{api}}/contacts
+Authorization: Bearer {{token}}
+
+### 4. Create a lead / deal
+POST {{api}}/leads
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "name": "Test Lead", "company": "Test Co", "deal": "Website", "value": 40000, "stage": "new", "source": "Website" }
+
+### 5. List tasks
+GET {{api}}/tasks
+Authorization: Bearer {{token}}
+
+### 6. Email automation: rules, today's queue and log
+GET {{api}}/automation
+Authorization: Bearer {{token}}
