@@ -32,9 +32,17 @@ button,input,select,textarea{font:inherit;color:inherit}
 svg.i{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
 /* shell */
-.app{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100%}
-.app.collapsed{grid-template-columns:0 minmax(0,1fr)}
-.app.collapsed .side{display:none}
+.app{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100%;transition:grid-template-columns .22s ease}
+.app.collapsed{grid-template-columns:72px minmax(0,1fr)}
+@media (min-width:901px){
+  .side{overflow:hidden}
+  .app.collapsed .brand{padding:22px 0 20px;justify-content:center}
+  .app.collapsed .brand span,.app.collapsed .nav a>span,.app.collapsed .me .who{display:none}
+  .app.collapsed .nav{padding:14px 10px}
+  .app.collapsed .nav a{justify-content:center;padding:11px 0;position:relative}
+  .app.collapsed .nav .badge{display:grid;position:absolute;top:2px;right:6px;margin:0;min-width:16px;height:16px;padding:0 4px;font-size:10px;place-items:center;background:var(--accent);color:var(--on-accent)}
+  .app.collapsed .me{flex-direction:column;padding:14px 0;gap:10px;justify-content:center}
+}
 .app[data-side="midnight"]{--side:#111827}
 .app[data-side="brand"]{--side:color-mix(in srgb,var(--accent) 62%,#050814)}
 .app[data-side="light"]{--side:var(--card);--side-ink:var(--ink);--side-muted:var(--muted);--side-line:var(--line);--side-hover:var(--sunk)}
@@ -43,7 +51,8 @@ svg.i{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-widt
 .side{background:var(--side);color:var(--side-ink);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;padding-top:env(safe-area-inset-top,0px);padding-left:env(safe-area-inset-left,0px);z-index:40}
 .brand{display:flex;align-items:center;gap:10px;padding:22px 22px 20px;font-weight:700;font-size:18px;color:#fff;border-bottom:1px solid var(--side-line)}
 .brand .logo{width:30px;height:30px;border-radius:9px;background:var(--accent);display:grid;place-items:center;color:var(--on-accent)}
-.brand span{font-weight:500;opacity:.8}
+.brand span{font-weight:500;opacity:.8;white-space:nowrap}
+.nav a>span:not(.badge){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nav{display:flex;flex-direction:column;gap:2px;padding:14px 12px;flex:1;overflow:auto}
 .nav a{text-decoration:none;display:flex;align-items:center;gap:12px;border:0;background:none;padding:10px 14px;border-radius:9px;cursor:pointer;color:var(--side-ink);font-weight:500;text-align:left;width:100%}
 .nav a:hover{background:var(--side-hover)}

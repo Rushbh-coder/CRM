@@ -54,7 +54,7 @@ export default function Layout() {
         <div className="brand"><div className="logo"><Icon name="logo" /></div><span>{brand}</span></div>
         <nav className="nav">
           {NAV.map((n, i) => n === null ? <div key={'s' + i} className="sep" /> : (
-            <NavLink key={n[0]} to={n[0]} end={n[0] === '/'} onClick={() => setOpen(false)}>
+            <NavLink key={n[0]} to={n[0]} end={n[0] === '/'} title={collapsed ? n[1] : undefined} onClick={() => setOpen(false)}>
               <Icon name={n[2]} /><span>{n[1]}</span>{badges[n[0]] ? <span className="badge">{badges[n[0]]}</span> : null}
             </NavLink>
           ))}
@@ -62,13 +62,13 @@ export default function Layout() {
         <div className="me" style={{ cursor: 'default' }}>
           <Avatar name={D.me ? D.me.name : ''} />
           <div className="who" style={{ flex: 1 }}><b>{D.me && D.me.name}</b><span>{D.me && D.me.email}</span></div>
-          <button className="btn icon" style={{ color: 'var(--side-muted)' }} onClick={logout} title="Log out" aria-label="Log out"><Icon name="logout" /></button>
+          <button className="btn icon pt-0" style={{ color: 'var(--side-muted)' }} onClick={logout} title="Log out" aria-label="Log out"><Icon name="logout" /></button>
         </div>
       </aside>
       <div className="scrim" onClick={() => setOpen(false)} />
       <main>
         <header className="topbar">
-          <button className="icon-btn" onClick={toggleMenu} aria-label="Toggle menu"><Icon name="menu" /></button>
+          <button className="icon-btn" onClick={toggleMenu} aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'} title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}><Icon name="menu" /></button>
           <h1>{title}</h1>
           <div className="gsearch">
             <Icon name="search" />
