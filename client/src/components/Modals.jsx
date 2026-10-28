@@ -1,5 +1,6 @@
 // Add/edit forms for every record type, plus the confirm dialog and toast.
 import { useEffect, useRef, useState } from 'react';
+import AiAssist from './AiAssist.jsx';
 import { useData } from '../context/DataContext.jsx';
 import { ATYPES, CSTATUS, INDUSTRIES, PRIOS, SEGMENTS, SOURCES, STAGES, TSTAT, today } from '../lib/utils.js';
 
@@ -129,6 +130,7 @@ export function RecordModal() {
             );
           })}
         </div>
+        {form.record && form.coll === 'leads' && <AiAssist key={form.record.id} type="lead" id={form.record.id} />}
         {err && <p className="err">{err}</p>}
         <div className="modal-foot">
           {form.record && <button type="button" className="btn ghost" style={{ marginRight: 'auto', color: 'var(--bad)' }} onClick={del}>Delete</button>}

@@ -2,6 +2,7 @@ import { useMemo, useRef, useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useData } from '../context/DataContext.jsx';
 import Icon from '../components/Icon.jsx';
+import AiAssist from '../components/AiAssist.jsx';
 import { ActIcon, Avatar, EmptyRow, Kpi, SearchBox, StagePill, StatusPill, Trend, usePaged } from '../components/ui.jsx';
 import { contactLast } from '../lib/crm.js';
 import { CSTATUS, OPEN, SEGMENTS, addDays, downloadFile, fmtDate, fmtTime, inr, lastMonth, matches, nowTime, parseCSV, pct, relDay, thisMonth, toCSV, ym } from '../lib/utils.js';
@@ -149,6 +150,7 @@ function ContactPanel({ c, onClose }) {
       {deals.length > 0 && <><h4>Deals</h4><div className="kv">{deals.map((d) => <div key={d.id}><span>{d.deal || d.name} <StagePill k={d.stage} /></span><span className="tn">{inr(d.value)}</span></div>)}</div></>}
       <h4>Notes</h4>
       <p style={{ margin: 0, fontSize: 13.5, whiteSpace: 'pre-wrap', color: c.notes ? 'var(--ink)' : 'var(--muted)' }}>{c.notes || 'No notes yet. Click the pencil to add some.'}</p>
+      <AiAssist key={c.id} type="contact" id={c.id} />
     </section>
   );
 }

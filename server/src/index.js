@@ -45,6 +45,7 @@ app.use('/api/activities', protect, records.activities);
 app.use('/api/tasks', protect, records.tasks);
 app.use('/api/settings', protect, require('./routes/settings'));
 app.use('/api/automation', protect, require('./routes/automation'));
+app.use('/api/ai', protect, require('./routes/ai'));
 app.use('/api', notFound);
 
 // In production, serve the built React app from client/dist
