@@ -18,8 +18,7 @@ if (!process.env.JWT_SECRET) {
 
 const app = express();
 app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173' }));
-// rawBody is kept so WhatsApp webhook signatures can be verified.
-app.use(express.json({ limit: '2mb', verify: (req, res, buf) => { req.rawBody = buf; } }));
+app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: false }));
 app.use(morgan('dev'));
 
@@ -38,7 +37,7 @@ app.get('/api/cron/daily', async (req, res, next) => {
 
 // Public
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/whatsapp', require('./routes/whatsapp'));
+app.use('/api/public-chat', require('./routes/publicChat'));
 
 // Logged-in only
 app.use('/api/team', protect, require('./routes/team'));

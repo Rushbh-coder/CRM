@@ -11,10 +11,10 @@ function pusher() {
 
 const channelFor = (org) => `private-org-${org}`;
 
-async function publish(org, event, data) {
+async function publishTo(channel, event, data) {
   const p = pusher();
   if (!p) return;
-  try { await p.trigger(channelFor(org), event, data); } catch (e) { console.error('[realtime] push failed:', e.message); }
+  try { await p.trigger(channel, event, data); } catch (e) { console.error('[realtime] push failed:', e.message); }
 }
 
-module.exports = { pusher, publish, channelFor, enabled: () => !!pusher() };
+module.exports = { pusher, publishTo, channelFor, enabled: () => !!pusher() };

@@ -15,6 +15,7 @@ import Reports from './pages/Reports.jsx';
 import Automation from './pages/Automation.jsx';
 import Settings from './pages/Settings.jsx';
 import Chat from './pages/Chat.jsx';
+import ChatWidget from './pages/ChatWidget.jsx';
 
 function Protected() {
   const { user, loading } = useAuth();
@@ -31,6 +32,7 @@ export default function App() {
   const { user } = useAuth();
   return (
     <Routes>
+      <Route path="/talk/:orgId" element={<ChatWidget />} />
       <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
       <Route path="/register" element={user ? <Navigate to="/" replace /> : <Register />} />
       <Route element={<Protected />}>
