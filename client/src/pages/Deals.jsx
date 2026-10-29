@@ -3,17 +3,8 @@ import { useData } from '../context/DataContext.jsx';
 import Icon from '../components/Icon.jsx';
 import { Avatar, Kpi, Select, Trend } from '../components/ui.jsx';
 import { DonutBlock, LineChart } from '../components/Charts.jsx';
-import { OPEN, STAGES, parseCSV, addDays, d10, fmtDate, inR, inr, inrShort, lastMonth, pct, rangeDates, sum, thisMonth, ym } from '../lib/utils.js';
-
-// Reads a CSV (first row = column names) and sends every row to the server, which matches the columns.
-async function importLeadsFile(D, file) {
-  const rows = parseCSV(await file.text());
-  if (rows.length < 2) return D.toast('That file has no rows to import.');
-  const head = rows[0].map((h) => h.trim());
-  const items = rows.slice(1).map((r) => Object.fromEntries(head.map((h, i) => [h, r[i] || ''])));
-  const res = await D.importLeads(items);
-  if (res) D.toast(`Imported ${res.imported} deal${res.imported === 1 ? '' : 's'}${res.skipped ? ` · ${res.skipped} already existed` : ''}`);
-}
+import { importLeadsFile } from '../lib/importLeads.js';
+import { OPEN, STAGES, addDays, d10, fmtDate, inR, inr, inrShort, lastMonth, pct, rangeDates, sum, thisMonth, ym } from '../lib/utils.js';
 
 export default function Deals() {
   const D = useData();

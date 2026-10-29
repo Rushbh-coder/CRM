@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
+import { importLeadsFile } from '../lib/importLeads.js';
 import { useData } from '../context/DataContext.jsx';
 import Icon from '../components/Icon.jsx';
 import { EmptyRow, Kpi, Person, RowMenu, SearchBox, Select, StagePill, Trend, usePaged } from '../components/ui.jsx';
@@ -11,6 +12,7 @@ const NO_FILTER = { status: 'all', source: 'all', owner: 'all', range: 'all' };
 
 export default function Leads() {
   const D = useData();
+  const fileRef = useRef(null);
   const L = D.leads;
   const [q, setQ] = useState('');
   const [f, setF] = useState(NO_FILTER);
@@ -55,6 +57,8 @@ export default function Leads() {
         <section className="card">
           <div className="toolbar">
             <SearchBox value={q} onChange={setQ} placeholder="Search leads…" />
+            <input ref={fileRef} type="file" accept=".csv,text/csv" hidden onChange={(e) => { const f = e.target.files[0]; e.target.value = ''; if (f) importLeadsFile(D, f); }} />
+            <button className="btn" onClick={() => fileRef.current.click()}><Icon name="upload" />Import CSV</button>
             <button className="btn" onClick={() => D.openForm('leads')}><Icon name="plus" />Add lead</button>
           </div>
           <div className="filters">
