@@ -1,12 +1,23 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useData } from '../context/DataContext.jsx';
 import Icon from '../components/Icon.jsx';
 import { Avatar, Kpi, Select, Trend } from '../components/ui.jsx';
 import { DonutBlock, LineChart } from '../components/Charts.jsx';
-import { OPEN, STAGES, addDays, d10, fmtDate, inR, inr, inrShort, lastMonth, pct, rangeDates, sum, thisMonth, ym } from '../lib/utils.js';
+import { OPEN, STAGES, parseCSV, addDays, d10, fmtDate, inR, inr, inrShort, lastMonth, pct, rangeDates, sum, thisMonth, ym } from '../lib/utils.js';
+
+// Reads a CSV (first row = column names) and sends every row to the server, which matches the columns.
+async function importLeadsFile(D, file) {
+  const rows = parseCSV(await file.text());
+  if (rows.length < 2) return D.toast('That file has no rows to import.');
+  const head = rows[0].map((h) => h.trim());
+  const items = rows.slice(1).map((r) => Object.fromEntries(head.map((h, i) => [h, r[i] || ''])));
+  const res = await D.importLeads(items);
+  if (res) D.toast(`Imported ${res.imported} deal${res.imported === 1 ? '' : 's'}${res.skipped ? ` · ${res.skipped} already existed` : ''}`);
+}
 
 export default function Deals() {
   const D = useData();
+  const fileRef = useRef(null);
   const [owner, setOwner] = useState('all');
   const [range, setRange] = useState('all');
   const list = useMemo(() => D.leads.filter((l) => (owner === 'all' || l.owner === owner) && (range === 'all' || inR(l.createdAt, rangeDates(range)))), [D.leads, owner, range]);
@@ -47,6 +58,8 @@ export default function Deals() {
           <div className="toolbar">
             <Select value={owner} onChange={setOwner} label="Owner" options={[['all', 'All Owners'], ...D.team.map((u) => [u.id, u.name])]} />
             <Select value={range} onChange={setRange} label="Period" options={[['all', 'All time'], ['month', 'This Month'], ['last30', 'Last 30 days'], ['quarter', 'This Quarter'], ['year', 'This Year']]} />
+            <input ref={fileRef} type="file" accept=".csv,text/csv" hidden onChange={(e) => { const f = e.target.files[0]; e.target.value = ''; if (f) importLeadsFile(D, f); }} />
+            <button className="btn" onClick={() => fileRef.current.click()}><Icon name="upload" />Import CSV</button>
             <button className="btn primary" onClick={() => D.openForm('leads')}><Icon name="plus" />New Deal</button>
           </div>
         </div>

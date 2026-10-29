@@ -122,6 +122,17 @@ export function DataProvider({ children }) {
     }
   }, [toast]);
 
+  const importLeads = useCallback(async (rows) => {
+    try {
+      const { data } = await api.post('/leads/import', { rows });
+      setState((s) => ({ ...s, leads: [...data.items, ...s.leads].sort(SORT.leads) }));
+      return data;
+    } catch (e) {
+      toast(errMsg(e));
+      return null;
+    }
+  }, [toast]);
+
   const setTeam = useCallback((team) => setState((s) => ({ ...s, team })), []);
 
   const value = useMemo(() => {
@@ -135,6 +146,7 @@ export function DataProvider({ children }) {
       remove,
       saveSettings,
       importContacts,
+      importLeads,
       setTeam,
       me: user,
       setMe: setUser,
@@ -154,7 +166,7 @@ export function DataProvider({ children }) {
       confirm: (text, label, onYes) => setConfirmBox({ text, label, onYes }),
       closeConfirm: () => setConfirmBox(null)
     };
-  }, [state, loading, loadError, reload, save, remove, saveSettings, importContacts, setTeam, user, setUser, appearance, toast, toastMsg, form, confirmBox]);
+  }, [state, loading, loadError, reload, save, remove, saveSettings, importContacts, importLeads, setTeam, user, setUser, appearance, toast, toastMsg, form, confirmBox]);
 
   return <DataCtx.Provider value={value}>{children}</DataCtx.Provider>;
 }
