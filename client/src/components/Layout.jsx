@@ -10,7 +10,7 @@ import { fmtTime, relDay, stageOf, today, nowTime } from '../lib/utils.js';
 
 export const NAV = [
   ['/', 'Dashboard', 'home'], ['/leads', 'Leads', 'shield'], ['/contacts', 'Contacts', 'users'], ['/accounts', 'Accounts', 'building'],
-  ['/deals', 'Deals', 'deal'], ['/activities', 'Activities', 'activity'], ['/tasks', 'Tasks', 'task'], ['/calendar', 'Calendar', 'cal'],
+  ['/deals', 'Deals', 'deal'], ['/chat', 'WhatsApp Chat', 'send'], ['/activities', 'Activities', 'activity'], ['/tasks', 'Tasks', 'task'], ['/calendar', 'Calendar', 'cal'],
   ['/reports', 'Reports', 'bars'], null, ['/automation', 'Email Automation', 'mail'], ['/settings', 'Settings', 'cog']
 ];
 

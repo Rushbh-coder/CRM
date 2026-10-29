@@ -14,6 +14,7 @@ import Calendar from './pages/Calendar.jsx';
 import Reports from './pages/Reports.jsx';
 import Automation from './pages/Automation.jsx';
 import Settings from './pages/Settings.jsx';
+import Chat from './pages/Chat.jsx';
 
 function Protected() {
   const { user, loading } = useAuth();
@@ -39,6 +40,7 @@ export default function App() {
         <Route path="/accounts" element={<Accounts />} />
         <Route path="/deals" element={<Deals />} />
         <Route path="/activities" element={<Activities />} />
+        <Route path="/chat" element={<Chat />} />
         <Route path="/tasks" element={<Tasks />} />
         <Route path="/calendar" element={<Calendar />} />
         <Route path="/reports" element={<Reports />} />

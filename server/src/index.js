@@ -18,7 +18,9 @@ if (!process.env.JWT_SECRET) {
 
 const app = express();
 app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173' }));
-app.use(express.json({ limit: '2mb' }));
+// rawBody is kept so WhatsApp webhook signatures can be verified.
+app.use(express.json({ limit: '2mb', verify: (req, res, buf) => { req.rawBody = buf; } }));
+app.use(express.urlencoded({ extended: false }));
 app.use(morgan('dev'));
 
 // Serverless (Vercel): make sure the DB is connected before handling a request.
@@ -36,6 +38,7 @@ app.get('/api/cron/daily', async (req, res, next) => {
 
 // Public
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/whatsapp', require('./routes/whatsapp'));
 
 // Logged-in only
 app.use('/api/team', protect, require('./routes/team'));
@@ -46,6 +49,7 @@ app.use('/api/tasks', protect, records.tasks);
 app.use('/api/settings', protect, require('./routes/settings'));
 app.use('/api/automation', protect, require('./routes/automation'));
 app.use('/api/ai', protect, require('./routes/ai'));
+app.use('/api/chat', protect, require('./routes/chat'));
 app.use('/api', notFound);
 
 // In production, serve the built React app from client/dist
