@@ -4,7 +4,7 @@ import AiAssist from './AiAssist.jsx';
 import { useData } from '../context/DataContext.jsx';
 import { ATYPES, CSTATUS, INDUSTRIES, PRIOS, SEGMENTS, SOURCES, STAGES, TSTAT, today } from '../lib/utils.js';
 
-function fieldsFor(coll, team) {
+function fieldsFor(coll, team, companies = []) {
   const people = team.map((u) => [u.id, u.name]);
   if (coll === 'contacts') return [
     { k: 'name', l: 'Full name', req: 1 }, { k: 'title', l: 'Job title' }, { k: 'company', l: 'Company' },
@@ -23,7 +23,7 @@ function fieldsFor(coll, team) {
   ];
   if (coll === 'activities') return [
     { k: 'title', l: 'What', req: 1, full: 1, ph: 'e.g. Call with Rohan about the quote' }, { k: 'type', l: 'Type', opts: ATYPES },
-    { k: 'related', l: 'Contact or company' }, { k: 'date', l: 'Date', type: 'date', req: 1 }, { k: 'time', l: 'Time', type: 'time' },
+    { k: 'related', l: 'Company', opts: [['', 'Select a company…'], ...companies] }, { k: 'date', l: 'Date', type: 'date', req: 1 }, { k: 'time', l: 'Time', type: 'time' },
     { k: 'owner', l: 'Owner', opts: people }, { k: 'done', l: 'Status', opts: [['false', 'Scheduled'], ['true', 'Completed']] },
     { k: 'notes', l: 'Notes', area: 1 }
   ];
@@ -66,7 +66,9 @@ export function RecordModal() {
   }, [form]);
 
   if (!form) return null;
-  const fields = fieldsFor(form.coll, D.team);
+  // Company dropdown for calendar events: every company that has a lead, A to Z.
+  const companies = [...new Set(D.leads.map((l) => (l.company || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  const fields = fieldsFor(form.coll, D.team, companies);
   const word = TITLES[form.coll];
 
   const submit = async (e) => {
@@ -109,9 +111,13 @@ export function RecordModal() {
             const set = (x) => setVals((s) => ({ ...s, [f.k]: x }));
             let input;
             if (f.opts) {
+              // Keep a saved value selectable even if it is no longer in the list (e.g. an older free-typed name).
+              const cur = vals[f.k];
+              const known = f.opts.some((o) => (Array.isArray(o) ? o[0] : o) === cur);
+              const opts = cur && !known ? [...f.opts, cur] : f.opts;
               input = (
                 <select id={id} ref={i === 0 ? firstRef : undefined} value={vals[f.k] ?? ''} onChange={(e) => set(e.target.value)}>
-                  {f.opts.map((o) => (Array.isArray(o) ? <option key={o[0]} value={o[0]}>{o[1]}</option> : <option key={o} value={o}>{o}</option>))}
+                  {opts.map((o) => (Array.isArray(o) ? <option key={o[0]} value={o[0]}>{o[1]}</option> : <option key={o} value={o}>{o}</option>))}
                 </select>
               );
             } else if (f.area) {
