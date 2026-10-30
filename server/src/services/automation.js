@@ -33,6 +33,11 @@ const RULES = [
     body: 'Hi {{first_name}},\n\nWe have not heard from {{company}} in a while and wanted to check in. Is there anything we can help you with this month?\n\nRegards,\n{{sender}}\n{{business}}'
   },
   {
+    key: 'contacted_digest', name: 'Contacted leads reminder to me', when: 'Every 2 days, to your own email: all leads in the Contacted stage', defaultOn: true,
+    subject: '{{contacted_count}} contacted leads need a follow-up',
+    body: 'Hi {{sender}},\n\nThese leads are in the Contacted stage. Please follow up or move them forward:\n\n{{contacted_list}}\n\nOpen your CRM to update them.'
+  },
+  {
     key: 'daily_summary', name: 'Daily summary to me', when: "Every day, to your own email: today's follow-ups, tasks and activities", defaultOn: true,
     subject: 'Your CRM plan for today',
     body: 'Good morning {{sender}},\n\nHere is your plan for today:\n\n{{today_list}}\n\nHave a great day!'
@@ -88,13 +93,18 @@ async function buildQueue(orgId) {
   tasks.forEach((t) => lines.push(`• Task: ${t.title}${t.due < today ? ' — overdue' : ''}`));
   const todayList = lines.length ? lines.join('\n') : 'Nothing scheduled today.';
 
+  const contacted = leads.filter((l) => l.stage === 'contacted');
+  const contactedList = contacted
+    .map((l) => `• ${l.name}${l.company ? ' (' + l.company + ')' : ''}${l.deal ? ' - ' + l.deal : ''}${l.phone ? ' - ' + l.phone : ''}${l.followUp ? ' - follow-up ' + l.followUp : ''}`)
+    .join('\n');
+
   const queue = [];
   const add = (key, rec, to) => {
     const r = rule(key);
     const v = {
       name: rec.name || '', first_name: String(rec.name || '').split(' ')[0], company: rec.company || 'your company',
       deal: rec.deal || 'our proposal', value: rec.value ? inr(rec.value) : '', follow_up: rec.followUp || '',
-      business, sender, today_list: todayList
+      business, sender, today_list: todayList, contacted_list: contactedList, contacted_count: contacted.length
     };
     queue.push({ rule: key, ruleName: r.name, recordId: String(rec._id || rec.id), to, name: rec.name, subject: fill(r.subject, v), body: fill(r.body, v) });
   };
@@ -103,6 +113,9 @@ async function buildQueue(orgId) {
   if (on('welcome_customer')) contacts.filter((c) => c.email && dateOf(c.createdAt, tz) >= addDays(today, -1) && !loggedEver('welcome_customer', String(c._id))).forEach((c) => add('welcome_customer', c, c.email));
   if (on('won_thanks')) leads.filter((l) => l.stage === 'won' && l.email && l.wonAt && dateOf(l.wonAt, tz) >= addDays(today, -2) && !loggedEver('won_thanks', String(l._id))).forEach((l) => add('won_thanks', l, l.email));
   if (on('inactive_checkin')) contacts.filter((c) => c.status === 'Inactive' && c.email && !loggedSince('inactive_checkin', String(c._id), 30)).forEach((c) => add('inactive_checkin', c, c.email));
+  // Every other day (sent on day 0, skipped on day 1, sent again on day 2), only while some leads are in Contacted.
+  const myEmail = s.summaryEmail || (owner && owner.email);
+  if (on('contacted_digest') && myEmail && contacted.length && !loggedSince('contacted_digest', 'me', 1)) add('contacted_digest', { _id: 'me', name: sender }, myEmail);
   if (on('daily_summary') && s.summaryEmail && !loggedToday('daily_summary', 'me')) add('daily_summary', { _id: 'me', name: sender }, s.summaryEmail);
 
   return { today, queue };
