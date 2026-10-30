@@ -4,6 +4,19 @@ import Icon from '../components/Icon.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { errMsg } from '../api.js';
 
+// Password box with a show/hide eye button.
+function PasswordInput({ id, value, onChange, autoComplete, required }) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="pw-wrap">
+      <input id={id} type={show ? 'text' : 'password'} autoComplete={autoComplete} value={value} onChange={onChange} required={required} />
+      <button type="button" className="pw-eye" onClick={() => setShow((s) => !s)} aria-label={show ? 'Hide password' : 'Show password'} title={show ? 'Hide password' : 'Show password'}>
+        <Icon name={show ? 'eyeoff' : 'eye'} />
+      </button>
+    </div>
+  );
+}
+
 function Shell({ children }) {
   return (
     <div className="auth-page">
@@ -42,7 +55,7 @@ export function Login() {
       <form className="auth-card" onSubmit={submit} noValidate>
         <h2>Log in</h2>
         <div className="field"><label htmlFor="l-email">Email</label><input id="l-email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
-        <div className="field"><label htmlFor="l-pass">Password</label><input id="l-pass" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required /></div>
+        <div className="field"><label htmlFor="l-pass">Password</label><PasswordInput id="l-pass" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required /></div>
         {err && <p className="err">{err}</p>}
         <button className="btn primary" type="submit" disabled={busy}>{busy ? 'Logging in…' : 'Log in'}</button>
         <p className="hint" style={{ margin: 0 }}>New here? <Link to="/register">Create your CRM account</Link></p>
@@ -73,7 +86,7 @@ export function Register() {
         <div className="field"><label htmlFor="r-name">Your name</label><input id="r-name" value={f.name} onChange={set('name')} autoComplete="name" /></div>
         <div className="field"><label htmlFor="r-biz">Business name</label><input id="r-biz" value={f.businessName} onChange={set('businessName')} placeholder="e.g. Acme Solutions" /></div>
         <div className="field"><label htmlFor="r-email">Email</label><input id="r-email" type="email" value={f.email} onChange={set('email')} autoComplete="email" /></div>
-        <div className="field"><label htmlFor="r-pass">Password</label><input id="r-pass" type="password" value={f.password} onChange={set('password')} autoComplete="new-password" /></div>
+        <div className="field"><label htmlFor="r-pass">Password</label><PasswordInput id="r-pass" value={f.password} onChange={set('password')} autoComplete="new-password" /></div>
         {err && <p className="err">{err}</p>}
         <button className="btn primary" type="submit" disabled={busy}>{busy ? 'Creating…' : 'Create account'}</button>
         <p className="hint" style={{ margin: 0 }}>Already have an account? <Link to="/login">Log in</Link></p>
