@@ -150,7 +150,7 @@ function ContactPanel({ c, onClose }) {
       {deals.length > 0 && <><h4>Deals</h4><div className="kv">{deals.map((d) => <div key={d.id}><span>{d.deal || d.name} <StagePill k={d.stage} /></span><span className="tn">{inr(d.value)}</span></div>)}</div></>}
       <h4>Notes</h4>
       <p style={{ margin: 0, fontSize: 13.5, whiteSpace: 'pre-wrap', color: c.notes ? 'var(--ink)' : 'var(--muted)' }}>{c.notes || 'No notes yet. Click the pencil to add some.'}</p>
-      <AiAssist key={c.id} type="contact" id={c.id} />
+      <AiAssist key={c.id} type="contact" id={c.id} phone={c.phone} email={c.email} />
     </section>
   );
 }

@@ -8,6 +8,7 @@ const Task = require('../models/Task');
 const User = require('../models/User');
 const { sendMail } = require('./mailer');
 const { buildContactedEmail } = require('./contactedEmail');
+const { leadMessages } = require('./aiMessage');
 const { todayIn, addDays, dateOf } = require('../utils/dates');
 
 const OPEN = ['new', 'contacted', 'qualified', 'proposal'];
@@ -64,7 +65,7 @@ async function getRules(orgId) {
 }
 
 // Works out which emails are due today. Same logic the Email Automation page previews.
-async function buildQueue(orgId) {
+async function buildQueue(orgId, opts = {}) {
   const org = await Organization.findById(orgId);
   const s = org.settings || {};
   const tz = process.env.TZ_NAME || 'Asia/Kolkata';
@@ -96,7 +97,9 @@ async function buildQueue(orgId) {
 
   const contacted = leads.filter((l) => l.stage === 'contacted');
   const appUrl = String(process.env.CLIENT_URL || '').replace(/\/$/, '');
-  const contactedMail = contacted.length ? buildContactedEmail({ leads: contacted, sender, business, appUrl, today }) : { html: '', text: '' };
+  // AI-written messages only when actually sending (opts.ai), never when just previewing the queue.
+  const messages = opts.ai && contacted.length && !loggedSince('contacted_digest', 'me', 1) ? await leadMessages(contacted, { sender, business }) : undefined;
+  const contactedMail = contacted.length ? buildContactedEmail({ leads: contacted, sender, business, appUrl, today, messages, ownerPhone: owner && owner.phone }) : { html: '', text: '' };
   const contactedList = contactedMail.text;
 
   const queue = [];
@@ -127,7 +130,7 @@ async function buildQueue(orgId) {
 
 // Sends everything in today's queue and records each email in the log.
 async function runForOrg(orgId) {
-  const { today, queue } = await buildQueue(orgId);
+  const { today, queue } = await buildQueue(orgId, { ai: true });
   const org = await Organization.findById(orgId);
   const fromName = (org.settings && org.settings.businessName) || org.name;
   const result = { sent: 0, skipped: 0, failed: 0 };

@@ -24,12 +24,17 @@ function details(l) {
   ].filter(([, v]) => v);
 }
 
-function buildContactedEmail({ leads, sender, business, appUrl, today }) {
+// messages: optional Map(leadId -> { text, ai }) from services/aiMessage; ownerPhone: for the "send to my WhatsApp" button.
+function buildContactedEmail({ leads, sender, business, appUrl, today, messages, ownerPhone }) {
   const total = leads.reduce((n, l) => n + (Number(l.value) || 0), 0);
+  const pick = (l) => (messages && messages.get(String(l._id))) || { text: messageFor(l, sender, business), ai: false };
+  const ownerWa = waNumber(ownerPhone);
+  // Whole list as one WhatsApp message to yourself (kept short so the link stays valid).
+  const ownerText = `${leads.length} contacted leads to follow up:\n` + leads.map((l, i) => `${i + 1}. ${l.name}${l.company ? ' (' + l.company + ')' : ''}${l.phone ? ' - ' + l.phone : ''}${l.deal ? ' - ' + l.deal : ''}`).join('\n');
   const btn = (href, label, bg) => `<a href="${esc(href)}" style="display:inline-block;background:${bg};color:#ffffff;text-decoration:none;font-size:13px;font-weight:600;padding:8px 14px;border-radius:8px;margin:0 6px 6px 0">${label}</a>`;
 
   const cards = leads.map((l) => {
-    const msg = messageFor(l, sender, business);
+    const { text: msg, ai } = pick(l);
     const wa = waNumber(l.phone);
     const rows = details(l).map(([k, v]) => `<tr><td style="padding:3px 12px 3px 0;color:#6b7280;font-size:13px;white-space:nowrap;vertical-align:top">${esc(k)}</td><td style="padding:3px 0;color:#111827;font-size:13px">${esc(v)}</td></tr>`).join('');
     const notes = l.notes ? `<p style="margin:10px 0 0;font-size:12.5px;color:#6b7280">Notes: ${esc(String(l.notes).replace(/\s+/g, ' ').slice(0, 220))}</p>` : '';
@@ -49,7 +54,7 @@ function buildContactedEmail({ leads, sender, business, appUrl, today }) {
           <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:8px">${rows}</table>
           ${notes}
           <div style="margin-top:12px;background:#f5f3ff;border-left:3px solid #4f46e5;border-radius:6px;padding:10px 12px">
-            <div style="font-size:11px;font-weight:700;color:#4f46e5;letter-spacing:.04em;margin-bottom:4px">SUGGESTED MESSAGE</div>
+            <div style="font-size:11px;font-weight:700;color:#4f46e5;letter-spacing:.04em;margin-bottom:4px">${ai ? 'AI-WRITTEN MESSAGE' : 'SUGGESTED MESSAGE'}</div>
             <div style="font-size:13px;color:#1f2937;line-height:1.5">${esc(msg)}</div>
           </div>
           <div style="margin-top:12px">${buttons}</div>
@@ -69,7 +74,8 @@ function buildContactedEmail({ leads, sender, business, appUrl, today }) {
     </td></tr>
     <tr><td style="background:#f3f4f6;padding:18px 0 0"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${cards}</table></td></tr>
     <tr><td align="center" style="padding:8px 24px 28px">
-      ${appUrl ? `<a href="${esc(appUrl)}/leads" style="display:inline-block;background:#111827;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:11px 22px;border-radius:10px">Open my CRM</a>` : ''}
+      ${ownerWa ? `<a href="https://wa.me/${ownerWa}?text=${encodeURIComponent(ownerText)}" style="display:inline-block;background:#16a34a;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:11px 22px;border-radius:10px;margin:0 6px 8px 0">Send this list to my WhatsApp</a>` : ''}
+      ${appUrl ? `<a href="${esc(appUrl)}/leads" style="display:inline-block;background:#111827;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:11px 22px;border-radius:10px;margin:0 0 8px">Open my CRM</a>` : ''}
       <p style="margin:16px 0 0;font-size:12px;color:#9ca3af">You get this reminder every 2 days while leads are in the Contacted stage. Turn it off under Email Automation.</p>
     </td></tr>
   </table>
@@ -77,7 +83,7 @@ function buildContactedEmail({ leads, sender, business, appUrl, today }) {
 
   const text = leads.map((l) => {
     const d = details(l).map(([k, v]) => `   ${k}: ${v}`).join('\n');
-    return `• ${l.name}\n${d}\n   Message: ${messageFor(l, sender, business)}`;
+    return `• ${l.name}\n${d}\n   Message: ${pick(l).text}`;
   }).join('\n\n');
 
   return { html, text };

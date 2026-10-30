@@ -136,7 +136,7 @@ export function RecordModal() {
             );
           })}
         </div>
-        {form.record && form.coll === 'leads' && <AiAssist key={form.record.id} type="lead" id={form.record.id} />}
+        {form.record && form.coll === 'leads' && <AiAssist key={form.record.id} type="lead" id={form.record.id} phone={vals.phone} email={vals.email} />}
         {err && <p className="err">{err}</p>}
         <div className="modal-foot">
           {form.record && <button type="button" className="btn ghost" style={{ marginRight: 'auto', color: 'var(--bad)' }} onClick={del}>Delete</button>}
