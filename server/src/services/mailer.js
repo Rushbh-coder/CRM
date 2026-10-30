@@ -20,11 +20,11 @@ function getTransport() {
   return transport;
 }
 
-async function sendMail({ to, subject, text, fromName }) {
+async function sendMail({ to, subject, text, html, fromName }) {
   const t = getTransport();
   if (!t) throw new Error('Email is not set up. Add SMTP settings to server/.env.');
   const from = process.env.MAIL_FROM || (fromName ? `"${fromName}" <${process.env.SMTP_USER}>` : process.env.SMTP_USER);
-  return t.sendMail({ from, to, subject, text });
+  return t.sendMail({ from, to, subject, text, ...(html ? { html } : {}) });
 }
 
 async function verify() {

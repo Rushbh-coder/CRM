@@ -7,6 +7,7 @@ const Activity = require('../models/Activity');
 const Task = require('../models/Task');
 const User = require('../models/User');
 const { sendMail } = require('./mailer');
+const { buildContactedEmail } = require('./contactedEmail');
 const { todayIn, addDays, dateOf } = require('../utils/dates');
 
 const OPEN = ['new', 'contacted', 'qualified', 'proposal'];
@@ -94,9 +95,9 @@ async function buildQueue(orgId) {
   const todayList = lines.length ? lines.join('\n') : 'Nothing scheduled today.';
 
   const contacted = leads.filter((l) => l.stage === 'contacted');
-  const contactedList = contacted
-    .map((l) => `• ${l.name}${l.company ? ' (' + l.company + ')' : ''}${l.deal ? ' - ' + l.deal : ''}${l.phone ? ' - ' + l.phone : ''}${l.followUp ? ' - follow-up ' + l.followUp : ''}`)
-    .join('\n');
+  const appUrl = String(process.env.CLIENT_URL || '').replace(/\/$/, '');
+  const contactedMail = contacted.length ? buildContactedEmail({ leads: contacted, sender, business, appUrl, today }) : { html: '', text: '' };
+  const contactedList = contactedMail.text;
 
   const queue = [];
   const add = (key, rec, to) => {
@@ -115,7 +116,10 @@ async function buildQueue(orgId) {
   if (on('inactive_checkin')) contacts.filter((c) => c.status === 'Inactive' && c.email && !loggedSince('inactive_checkin', String(c._id), 30)).forEach((c) => add('inactive_checkin', c, c.email));
   // Every other day (sent on day 0, skipped on day 1, sent again on day 2), only while some leads are in Contacted.
   const myEmail = s.summaryEmail || (owner && owner.email);
-  if (on('contacted_digest') && myEmail && contacted.length && !loggedSince('contacted_digest', 'me', 1)) add('contacted_digest', { _id: 'me', name: sender }, myEmail);
+  if (on('contacted_digest') && myEmail && contacted.length && !loggedSince('contacted_digest', 'me', 1)) {
+    add('contacted_digest', { _id: 'me', name: sender }, myEmail);
+    queue[queue.length - 1].html = contactedMail.html;
+  }
   if (on('daily_summary') && s.summaryEmail && !loggedToday('daily_summary', 'me')) add('daily_summary', { _id: 'me', name: sender }, s.summaryEmail);
 
   return { today, queue };
@@ -135,7 +139,7 @@ async function runForOrg(orgId) {
       note = 'Sample or invalid address';
     } else {
       try {
-        await sendMail({ to: m.to, subject: m.subject, text: m.body, fromName });
+        await sendMail({ to: m.to, subject: m.subject, text: m.body, html: m.html, fromName });
       } catch (e) {
         status = 'failed';
         note = e.message.slice(0, 200);
